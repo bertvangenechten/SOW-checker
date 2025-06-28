@@ -1,16 +1,16 @@
 import streamlit as st
 from docx import Document
-import openai
+from openai import OpenAI
 
-# Configure OpenAI API key
-openai.api_key = st.secrets["OPENAI_API_KEY"]
+# Initialize OpenAI client
+client = OpenAI(api_key=st.secrets["OPENAI_API_KEY"])
 
 def extract_docx_text(uploaded_file):
     doc = Document(uploaded_file)
     return "\n".join(p.text for p in doc.paragraphs if p.text.strip())
 
 def evaluate_prompt(contract_text, prompt):
-    response = openai.ChatCompletion.create(
+    response = client.chat.completions.create(
         model="gpt-4",
         messages=[
             {"role": "system", "content": "You are a legal analyst evaluating contract clauses."},
@@ -18,7 +18,7 @@ def evaluate_prompt(contract_text, prompt):
         ],
         temperature=0,
     )
-    return response["choices"][0]["message"]["content"]
+    return response.choices[0].message.content
 
 st.title("📄 Contract Checker Agent")
 st.write("Upload a prompt file and a contract document to run automated checks.")
