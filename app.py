@@ -11,7 +11,7 @@ def extract_docx_text(uploaded_file):
 
 def evaluate_prompt(contract_text, prompt):
     response = client.chat.completions.create(
-        model="gpt-4",
+        model="gpt-3.5-turbo",
         messages=[
             {"role": "system", "content": "You are a legal analyst evaluating contract clauses."},
             {"role": "user", "content": f"Contract:\n{contract_text}\n\nCheck this:\n{prompt}"}
