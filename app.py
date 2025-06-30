@@ -1,6 +1,8 @@
 import streamlit as st
 from docx import Document
 from openai import OpenAI
+import time
+from openai import RateLimitError
 
 # Initialize OpenAI client
 client = OpenAI(api_key=st.secrets["OPENAI_API_KEY"])
@@ -10,15 +12,19 @@ def extract_docx_text(uploaded_file):
     return "\n".join(p.text for p in doc.paragraphs if p.text.strip())
 
 def evaluate_prompt(contract_text, prompt):
-    response = client.chat.completions.create(
-        model="gpt-3.5-turbo",
-        messages=[
-            {"role": "system", "content": "You are a legal analyst evaluating contract clauses."},
-            {"role": "user", "content": f"Contract:\n{contract_text}\n\nCheck this:\n{prompt}"}
-        ],
-        temperature=0,
-    )
-    return response.choices[0].message.content
+    try:
+        response = client.chat.completions.create(
+            model="gpt-3.5-turbo-1106",
+            messages=[
+                {"role": "system", "content": "You are a legal analyst evaluating contract clauses."},
+                {"role": "user", "content": f"Contract:\n{contract_text}\n\nCheck this:\n{prompt}"}
+            ],
+            temperature=0,
+        )
+        return response.choices[0].message.content
+    except RateLimitError:
+        time.sleep(5)
+        return "❗ Rate limit reached. Please wait and try again later."
 
 st.title("📄 Contract Checker Agent")
 st.write("Upload a prompt file and a contract document to run automated checks.")
@@ -48,6 +54,7 @@ if submitted:
             with st.spinner(f"Processing prompt {i}/{len(prompt_texts)}: {prompt}"):
                 result = evaluate_prompt(contract_text, prompt)
                 results.append((prompt, result))
+                time.sleep(1.2)  # delay between API calls
 
         st.success("✅ All prompts processed!")
 
