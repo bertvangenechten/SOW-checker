@@ -26,6 +26,15 @@ def evaluate_prompt(contract_text, prompt):
         time.sleep(5)
         return "❗ Rate limit reached. Please wait and try again later."
 
+def evaluate_all_prompts(contract_text, prompt_list):
+    joined_prompts = "\\n".join([f"- {p}" for p in prompt_list])
+    message = f"""You will now receive a contract. Then check the following items:
+{joined_prompts}
+
+Here is the contract:
+{contract_text}
+"""
+
 st.title("📄 Contract Checker Agent")
 st.write("Upload a prompt file and a contract document to run automated checks.")
 
